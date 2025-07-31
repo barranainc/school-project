@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachers Dashboard - Barrana.ai School Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 80px;
+            bottom: 0;
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 999;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-item {
+            margin: 0.5rem 0;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: #f0f8ff;
+            color: #4caf50;
+            border-left-color: #4caf50;
+        }
+
+        .sidebar-icon {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1400px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            color: #4caf50;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .voice-recording {
+            background: #f8f9fa;
+            border: 2px dashed #4caf50;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .recording-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .recording-status {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .recording-active {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #4caf50;
+        }
+
+        .recording-inactive {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .recording-time {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4caf50;
+            margin: 1rem 0;
+        }
+
+        .student-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status-pending {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4caf50;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .report-preview {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4caf50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #4caf50;
+        }
+
+        .notification.error {
+            background: #f44336;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">👨‍🏫 Teachers Dashboard</div>
+            <div class="user-info">
+                <span>Welcome, Jane Smith</span>
+                <div class="user-avatar">J</div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="sidebar">
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="#dashboard" class="sidebar-link active" onclick="showSection('dashboard')">
+                    <span class="sidebar-icon">📊</span>
+                    Dashboard
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#voice" class="sidebar-link" onclick="showSection('voice')">
+                    <span class="sidebar-icon">🎤</span>
+                    Voice Recording
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#students" class="sidebar-link" onclick="showSection('students')">
+                    <span class="sidebar-icon">👨‍🎓</span>
+                    My Students
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#reports" class="sidebar-link" onclick="showSection('reports')">
+                    <span class="sidebar-icon">📝</span>
+                    Reports
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#settings" class="sidebar-link" onclick="showSection('settings')">
+                    <span class="sidebar-icon">⚙️</span>
+                    Settings
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <a href="/" class="back-link">← Back to Main Dashboard</a>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section">
+            <h2 class="section-title">📊 Teacher Dashboard</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">24</div>
+                    <div class="kpi-label">My Students</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">45</div>
+                    <div class="kpi-label">Reports Created</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">98.2%</div>
+                    <div class="kpi-label">AI Accuracy</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">4.8/5</div>
+                    <div class="kpi-label">Parent Rating</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Recent Activity</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Report Type</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Emma Johnson</td>
+                                <td>Progress Report</td>
+                                <td>2024-01-15</td>
+                                <td><span class="status-badge status-active">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Liam Smith</td>
+                                <td>Behavior Report</td>
+                                <td>2024-01-14</td>
+                                <td><span class="status-badge status-active">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Olivia Davis</td>
+                                <td>Academic Report</td>
+                                <td>2024-01-13</td>
+                                <td><span class="status-badge status-pending">In Progress</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Voice Recording Section -->
+        <div id="voice" class="section" style="display: none;">
+            <h2 class="section-title">🎤 Voice Recording</h2>
+            
+            <div class="voice-recording">
+                <h3>AI-Powered Voice-to-Report</h3>
+                <p>Record your observations and let AI generate professional reports instantly!</p>
+                
+                <select class="student-select" id="studentSelect">
+                    <option value="">Select a student...</option>
+                    <option value="ST001">Emma Johnson - Grade 3</option>
+                    <option value="ST002">Liam Smith - Grade 2</option>
+                    <option value="ST003">Olivia Davis - Grade 4</option>
+                    <option value="ST004">Noah Wilson - Grade 3</option>
+                    <option value="ST005">Ava Brown - Grade 2</option>
+                </select>
+
+                <div class="recording-status" id="recordingStatus">
+                    Ready to record
+                </div>
+
+                <div class="recording-time" id="recordingTime" style="display: none;">
+                    00:00
+                </div>
+
+                <div class="recording-controls">
+                    <button class="btn btn-primary" id="startRecording" onclick="startRecording()">
+                        🎤 Start Recording
+                    </button>
+                    <button class="btn btn-danger" id="stopRecording" onclick="stopRecording()" style="display: none;">
+                        ⏹️ Stop Recording
+                    </button>
+                    <button class="btn btn-secondary" id="generateReport" onclick="generateReport()" style="display: none;">
+                        🤖 Generate Report
+                    </button>
+                </div>
+
+                <div id="transcriptionResult" style="display: none;">
+                    <h4>Transcription:</h4>
+                    <div class="report-preview" id="transcriptionText"></div>
+                </div>
+
+                <div id="aiReportResult" style="display: none;">
+                    <h4>AI-Generated Report:</h4>
+                    <div class="report-preview" id="aiReportText"></div>
+                    <button class="btn btn-primary" onclick="saveReport()">💾 Save Report</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Students Section -->
+        <div id="students" class="section" style="display: none;">
+            <h2 class="section-title">👨‍🎓 My Students</h2>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Grade</th>
+                            <th>Class</th>
+                            <th>Last Report</th>
+                            <th>Progress</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ST001</td>
+                            <td>Emma Johnson</td>
+                            <td>Grade 3</td>
+                            <td>3A</td>
+                            <td>2024-01-15</td>
+                            <td>
+                                <div style="width: 100%; background: #f0f0f0; border-radius: 10px; height: 10px;">
+                                    <div style="width: 85%; background: #4caf50; height: 10px; border-radius: 10px;"></div>
+                                </div>
+                                <small>85%</small>
+                            </td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="viewStudentDetails('ST001')">View</button>
+                                <button class="btn btn-primary" onclick="createReport('ST001')">Report</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>ST002</td>
+                            <td>Liam Smith</td>
+                            <td>Grade 2</td>
+                            <td>2B</td>
+                            <td>2024-01-14</td>
+                            <td>
+                                <div style="width: 100%; background: #f0f0f0; border-radius: 10px; height: 10px;">
+                                    <div style="width: 72%; background: #4caf50; height: 10px; border-radius: 10px;"></div>
+                                </div>
+                                <small>72%</small>
+                            </td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="viewStudentDetails('ST002')">View</button>
+                                <button class="btn btn-primary" onclick="createReport('ST002')">Report</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>ST003</td>
+                            <td>Olivia Davis</td>
+                            <td>Grade 4</td>
+                            <td>4A</td>
+                            <td>2024-01-13</td>
+                            <td>
+                                <div style="width: 100%; background: #f0f0f0; border-radius: 10px; height: 10px;">
+                                    <div style="width: 91%; background: #4caf50; height: 10px; border-radius: 10px;"></div>
+                                </div>
+                                <small>91%</small>
+                            </td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="viewStudentDetails('ST003')">View</button>
+                                <button class="btn btn-primary" onclick="createReport('ST003')">Report</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div id="reports" class="section" style="display: none;">
+            <h2 class="section-title">📝 Reports</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">45</div>
+                    <div class="kpi-label">Total Reports</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">12</div>
+                    <div class="kpi-label">This Month</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">98.2%</div>
+                    <div class="kpi-label">AI Accuracy</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">2.3s</div>
+                    <div class="kpi-label">Avg Generation</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Student</th>
+                            <th>Type</th>
+                            <th>Created</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>R001</td>
+                            <td>Emma Johnson</td>
+                            <td>Progress Report</td>
+                            <td>2024-01-15</td>
+                            <td><span class="status-badge status-active">Published</span></td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="viewReport('R001')">View</button>
+                                <button class="btn btn-secondary" onclick="editReport('R001')">Edit</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>R002</td>
+                            <td>Liam Smith</td>
+                            <td>Behavior Report</td>
+                            <td>2024-01-14</td>
+                            <td><span class="status-badge status-active">Published</span></td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="viewReport('R002')">View</button>
+                                <button class="btn btn-secondary" onclick="editReport('R002')">Edit</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>R003</td>
+                            <td>Olivia Davis</td>
+                            <td>Academic Report</td>
+                            <td>2024-01-13</td>
+                            <td><span class="status-badge status-pending">Draft</span></td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="viewReport('R003')">View</button>
+                                <button class="btn btn-primary" onclick="publishReport('R003')">Publish</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settings" class="section" style="display: none;">
+            <h2 class="section-title">⚙️ Settings</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">Jane Smith</div>
+                    <div class="kpi-label">Teacher Name</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">Mathematics</div>
+                    <div class="kpi-label">Subject</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">3A, 3B</div>
+                    <div class="kpi-label">Classes</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">Active</div>
+                    <div class="kpi-label">Status</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Preferences</h3>
+                <div style="margin: 1rem 0;">
+                    <label style="display: block; margin-bottom: 0.5rem;">
+                        <input type="checkbox" checked> Enable AI Report Generation
+                    </label>
+                    <label style="display: block; margin-bottom: 0.5rem;">
+                        <input type="checkbox" checked> Email Notifications
+                    </label>
+                    <label style="display: block; margin-bottom: 0.5rem;">
+                        <input type="checkbox"> Auto-save Drafts
+                    </label>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        let isRecording = false;
+        let recordingInterval;
+        let recordingTime = 0;
+        let mediaRecorder;
+        let audioChunks = [];
+        let selectedStudent = '';
+
+        // Navigation functionality
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+
+            document.getElementById(sectionId).style.display = 'block';
+
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Voice recording functionality
+        async function startRecording() {
+            const studentSelect = document.getElementById('studentSelect');
+            selectedStudent = studentSelect.value;
+            
+            if (!selectedStudent) {
+                showNotification('Please select a student first!', 'error');
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    processRecording(audioBlob);
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                recordingTime = 0;
+
+                document.getElementById('startRecording').style.display = 'none';
+                document.getElementById('stopRecording').style.display = 'inline-flex';
+                document.getElementById('recordingStatus').textContent = 'Recording...';
+                document.getElementById('recordingStatus').className = 'recording-status recording-active';
+                document.getElementById('recordingTime').style.display = 'block';
+
+                recordingInterval = setInterval(() => {
+                    recordingTime++;
+                    const minutes = Math.floor(recordingTime / 60);
+                    const seconds = recordingTime % 60;
+                    document.getElementById('recordingTime').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+
+                showNotification('Recording started!', 'success');
+            } catch (error) {
+                showNotification('Error accessing microphone: ' + error.message, 'error');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                clearInterval(recordingInterval);
+
+                document.getElementById('startRecording').style.display = 'inline-flex';
+                document.getElementById('stopRecording').style.display = 'none';
+                document.getElementById('recordingStatus').textContent = 'Processing recording...';
+                document.getElementById('recordingStatus').className = 'recording-status recording-inactive';
+                document.getElementById('recordingTime').style.display = 'none';
+
+                showNotification('Recording stopped!', 'success');
+            }
+        }
+
+        async function processRecording(audioBlob) {
+            try {
+                // Simulate API call to backend
+                showNotification('Processing voice recording...', 'success');
+                
+                // Simulate transcription delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const mockTranscription = `Emma has shown excellent progress in mathematics this week. She demonstrates strong problem-solving skills and actively participates in class discussions. Her homework completion rate has improved significantly, and she shows great enthusiasm for learning new concepts. Emma works well with her peers and often helps other students who are struggling.`;
+                
+                document.getElementById('transcriptionText').textContent = mockTranscription;
+                document.getElementById('transcriptionResult').style.display = 'block';
+                document.getElementById('generateReport').style.display = 'inline-flex';
+                
+                document.getElementById('recordingStatus').textContent = 'Transcription complete!';
+                showNotification('Transcription completed!', 'success');
+            } catch (error) {
+                showNotification('Error processing recording: ' + error.message, 'error');
+            }
+        }
+
+        async function generateReport() {
+            try {
+                document.getElementById('generateReport').innerHTML = '<span class="loading"></span> Generating...';
+                document.getElementById('generateReport').disabled = true;
+                
+                // Simulate AI report generation
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                const mockAIReport = `PROGRESS REPORT - Emma Johnson
+Grade: 3A
+Date: ${new Date().toLocaleDateString()}
+Teacher: Jane Smith
+
+ACADEMIC PERFORMANCE:
+Emma has demonstrated exceptional growth in mathematics this week. Her problem-solving abilities have shown remarkable improvement, and she consistently applies critical thinking skills to complex mathematical concepts.
+
+CLASSROOM BEHAVIOR:
+Emma is an exemplary student who actively participates in classroom discussions and demonstrates excellent leadership qualities. She collaborates effectively with peers and often takes initiative to help classmates who may be struggling.
+
+STRENGTHS:
+• Strong mathematical reasoning skills
+• Excellent problem-solving abilities
+• Active classroom participation
+• Helpful and collaborative attitude
+• Consistent homework completion
+
+AREAS FOR GROWTH:
+• Continue practicing advanced multiplication
+• Work on time management during tests
+
+RECOMMENDATIONS:
+Emma should continue her current study habits and consider taking on additional challenging problems to further develop her mathematical skills. Her positive attitude and willingness to help others make her a valuable member of the class.
+
+Overall Assessment: Excellent Progress
+Next Review Date: ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}`;
+                
+                document.getElementById('aiReportText').textContent = mockAIReport;
+                document.getElementById('aiReportResult').style.display = 'block';
+                
+                document.getElementById('generateReport').innerHTML = '🤖 Generate Report';
+                document.getElementById('generateReport').disabled = false;
+                
+                showNotification('AI Report generated successfully!', 'success');
+            } catch (error) {
+                showNotification('Error generating report: ' + error.message, 'error');
+                document.getElementById('generateReport').innerHTML = '🤖 Generate Report';
+                document.getElementById('generateReport').disabled = false;
+            }
+        }
+
+        async function saveReport() {
+            try {
+                showNotification('Saving report...', 'success');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                showNotification('Report saved successfully!', 'success');
+                
+                // Reset the form
+                document.getElementById('studentSelect').value = '';
+                document.getElementById('transcriptionResult').style.display = 'none';
+                document.getElementById('aiReportResult').style.display = 'none';
+                document.getElementById('generateReport').style.display = 'none';
+                document.getElementById('recordingStatus').textContent = 'Ready to record';
+                document.getElementById('recordingStatus').className = 'recording-status recording-inactive';
+            } catch (error) {
+                showNotification('Error saving report: ' + error.message, 'error');
+            }
+        }
+
+        // Student management functions
+        function viewStudentDetails(studentId) {
+            showNotification(`Viewing details for student ${studentId}`, 'success');
+        }
+
+        function createReport(studentId) {
+            showNotification(`Creating report for student ${studentId}`, 'success');
+            showSection('voice');
+        }
+
+        // Report management functions
+        function viewReport(reportId) {
+            showNotification(`Viewing report ${reportId}`, 'success');
+        }
+
+        function editReport(reportId) {
+            showNotification(`Editing report ${reportId}`, 'success');
+        }
+
+        function publishReport(reportId) {
+            showNotification(`Publishing report ${reportId}`, 'success');
+        }
+
+        // Notification system
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('dashboard');
+        });
+    </script>
+</body>
+</html> 

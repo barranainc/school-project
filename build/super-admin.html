@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Dashboard - Barrana.ai School Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 80px;
+            bottom: 0;
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 999;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-item {
+            margin: 0.5rem 0;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: #f0f8ff;
+            color: #9c27b0;
+            border-left-color: #9c27b0;
+        }
+
+        .sidebar-icon {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1400px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            color: #9c27b0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .schools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .school-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .school-card:hover {
+            border-color: #9c27b0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .school-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .school-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .school-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status-trial {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-inactive {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .school-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #9c27b0;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.25rem;
+        }
+
+        .btn-primary {
+            background: #9c27b0;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #7b1fa2;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #9c27b0;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .chart-container {
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.1rem;
+            margin: 1rem 0;
+        }
+
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #4caf50;
+        }
+
+        .notification.error {
+            background: #f44336;
+        }
+
+        .notification.info {
+            background: #2196f3;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1002;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🌍 Barrana.ai Super Admin</div>
+            <div class="user-info">
+                <span>Welcome, Super Admin</span>
+                <div class="user-avatar">S</div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="sidebar">
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="#overview" class="sidebar-link active" onclick="showSection('overview')">
+                    <span class="sidebar-icon">📊</span>
+                    Global Overview
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#schools" class="sidebar-link" onclick="showSection('schools')">
+                    <span class="sidebar-icon">🏫</span>
+                    School Management
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#users" class="sidebar-link" onclick="showSection('users')">
+                    <span class="sidebar-icon">👥</span>
+                    User Management
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#billing" class="sidebar-link" onclick="showSection('billing')">
+                    <span class="sidebar-icon">💳</span>
+                    Billing & Subscriptions
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#analytics" class="sidebar-link" onclick="showSection('analytics')">
+                    <span class="sidebar-icon">📈</span>
+                    Business Intelligence
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#support" class="sidebar-link" onclick="showSection('support')">
+                    <span class="sidebar-icon">🆘</span>
+                    Support Center
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#settings" class="sidebar-link" onclick="showSection('settings')">
+                    <span class="sidebar-icon">⚙️</span>
+                    System Settings
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <a href="/" class="back-link">← Back to Main Dashboard</a>
+
+        <!-- Global Overview Section -->
+        <div id="overview" class="section">
+            <h2 class="section-title">📊 Global Overview</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">47</div>
+                    <div class="kpi-label">Active Schools</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">12,847</div>
+                    <div class="kpi-label">Total Students</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">$127,450</div>
+                    <div class="kpi-label">Monthly Revenue</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">99.8%</div>
+                    <div class="kpi-label">System Uptime</div>
+                </div>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">+15.3%</div>
+                    <div class="kpi-label">Growth (MoM)</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">3.2%</div>
+                    <div class="kpi-label">Churn Rate</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">4.8/5</div>
+                    <div class="kpi-label">Customer Satisfaction</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">156</div>
+                    <div class="kpi-label">Support Tickets</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                📈 Global Analytics Dashboard - Real-time business intelligence coming soon
+            </div>
+        </div>
+
+        <!-- School Management Section -->
+        <div id="schools" class="section" style="display: none;">
+            <h2 class="section-title">🏫 School Management</h2>
+            
+            <div style="margin-bottom: 2rem;">
+                <button class="btn btn-primary" onclick="addSchool()">➕ Add New School</button>
+                <button class="btn btn-secondary" onclick="exportSchools()">📊 Export Data</button>
+            </div>
+
+            <div class="schools-grid">
+                <div class="school-card">
+                    <div class="school-header">
+                        <div class="school-name">Sunshine Elementary</div>
+                        <span class="school-status status-active">Active</span>
+                    </div>
+                    <div class="school-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">247</div>
+                            <div class="stat-label">Students</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">18</div>
+                            <div class="stat-label">Teachers</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">Premium</div>
+                            <div class="stat-label">Plan</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">$2,450</div>
+                            <div class="stat-label">MRR</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="viewSchool('SCH001')">View Details</button>
+                        <button class="btn btn-secondary" onclick="editSchool('SCH001')">Edit</button>
+                        <button class="btn btn-secondary" onclick="impersonateSchool('SCH001')">Access</button>
+                    </div>
+                </div>
+
+                <div class="school-card">
+                    <div class="school-header">
+                        <div class="school-name">Maple Montessori</div>
+                        <span class="school-status status-active">Active</span>
+                    </div>
+                    <div class="school-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">156</div>
+                            <div class="stat-label">Students</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">Teachers</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">Standard</div>
+                            <div class="stat-label">Plan</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">$1,200</div>
+                            <div class="stat-label">MRR</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="viewSchool('SCH002')">View Details</button>
+                        <button class="btn btn-secondary" onclick="editSchool('SCH002')">Edit</button>
+                        <button class="btn btn-secondary" onclick="impersonateSchool('SCH002')">Access</button>
+                    </div>
+                </div>
+
+                <div class="school-card">
+                    <div class="school-header">
+                        <div class="school-name">Oakridge Academy</div>
+                        <span class="school-status status-trial">Trial</span>
+                    </div>
+                    <div class="school-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">89</div>
+                            <div class="stat-label">Students</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">8</div>
+                            <div class="stat-label">Teachers</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">Trial</div>
+                            <div class="stat-label">Plan</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">$0</div>
+                            <div class="stat-label">MRR</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="viewSchool('SCH003')">View Details</button>
+                        <button class="btn btn-secondary" onclick="editSchool('SCH003')">Edit</button>
+                        <button class="btn btn-secondary" onclick="impersonateSchool('SCH003')">Access</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Section -->
+        <div id="users" class="section" style="display: none;">
+            <h2 class="section-title">👥 User Management</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">1,247</div>
+                    <div class="kpi-label">Total Users</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">47</div>
+                    <div class="kpi-label">School Admins</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">892</div>
+                    <div class="kpi-label">Teachers</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">308</div>
+                    <div class="kpi-label">Parents</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <button class="btn btn-primary" onclick="addUser()">➕ Add User</button>
+                <button class="btn btn-secondary" onclick="bulkImport()">📥 Bulk Import</button>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>School</th>
+                            <th>Status</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>U001</td>
+                            <td>Jane Smith</td>
+                            <td>jane@sunshine.edu</td>
+                            <td>School Admin</td>
+                            <td>Sunshine Elementary</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>2024-01-15 14:30</td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="editUser('U001')">Edit</button>
+                                <button class="btn btn-danger" onclick="deactivateUser('U001')">Deactivate</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>U002</td>
+                            <td>Michael Brown</td>
+                            <td>michael@maple.edu</td>
+                            <td>Teacher</td>
+                            <td>Maple Montessori</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>2024-01-15 09:15</td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="editUser('U002')">Edit</button>
+                                <button class="btn btn-danger" onclick="deactivateUser('U002')">Deactivate</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Billing Section -->
+        <div id="billing" class="section" style="display: none;">
+            <h2 class="section-title">💳 Billing & Subscriptions</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">$127,450</div>
+                    <div class="kpi-label">Monthly Revenue</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">$1,529,400</div>
+                    <div class="kpi-label">Annual Revenue</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">3.2%</div>
+                    <div class="kpi-label">Churn Rate</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">$2,712</div>
+                    <div class="kpi-label">ARPS</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                💰 Revenue Analytics - Subscription management and billing insights coming soon
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>School</th>
+                            <th>Plan</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Next Billing</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Sunshine Elementary</td>
+                            <td>Premium</td>
+                            <td>$2,450/month</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>2024-02-15</td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="viewBilling('SCH001')">View</button>
+                                <button class="btn btn-primary" onclick="updatePlan('SCH001')">Update</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Maple Montessori</td>
+                            <td>Standard</td>
+                            <td>$1,200/month</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>2024-02-10</td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="viewBilling('SCH002')">View</button>
+                                <button class="btn btn-primary" onclick="updatePlan('SCH002')">Update</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div id="analytics" class="section" style="display: none;">
+            <h2 class="section-title">📈 Business Intelligence</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">+15.3%</div>
+                    <div class="kpi-label">User Growth</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">+22.1%</div>
+                    <div class="kpi-label">Revenue Growth</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">98.2%</div>
+                    <div class="kpi-label">AI Accuracy</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">4.8/5</div>
+                    <div class="kpi-label">NPS Score</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                📊 Advanced Analytics - AI-powered insights and predictive analytics coming soon
+            </div>
+        </div>
+
+        <!-- Support Section -->
+        <div id="support" class="section" style="display: none;">
+            <h2 class="section-title">🆘 Support Center</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">156</div>
+                    <div class="kpi-label">Open Tickets</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">2.1h</div>
+                    <div class="kpi-label">Avg Response</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">94.2%</div>
+                    <div class="kpi-label">Resolution Rate</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">4.7/5</div>
+                    <div class="kpi-label">Satisfaction</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>School</th>
+                            <th>Subject</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>T001</td>
+                            <td>Sunshine Elementary</td>
+                            <td>Voice recording not working</td>
+                            <td>High</td>
+                            <td><span class="status-badge status-active">Open</span></td>
+                            <td>2024-01-15</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="viewTicket('T001')">View</button>
+                                <button class="btn btn-secondary" onclick="assignTicket('T001')">Assign</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>T002</td>
+                            <td>Maple Montessori</td>
+                            <td>Report generation slow</td>
+                            <td>Medium</td>
+                            <td><span class="status-badge status-active">In Progress</span></td>
+                            <td>2024-01-14</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="viewTicket('T002')">View</button>
+                                <button class="btn btn-secondary" onclick="updateTicket('T002')">Update</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settings" class="section" style="display: none;">
+            <h2 class="section-title">⚙️ System Settings</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">Production</div>
+                    <div class="kpi-label">Environment</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">v1.0.0</div>
+                    <div class="kpi-label">System Version</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">Healthy</div>
+                    <div class="kpi-label">System Status</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">2.3GB</div>
+                    <div class="kpi-label">Storage Used</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Global Configuration</h3>
+                <div style="margin: 1rem 0;">
+                    <label style="display: block; margin-bottom: 0.5rem;">
+                        <input type="checkbox" checked> Enable AI Features
+                    </label>
+                    <label style="display: block; margin-bottom: 0.5rem;">
+                        <input type="checkbox" checked> Email Notifications
+                    </label>
+                    <label style="display: block; margin-bottom: 0.5rem;">
+                        <input type="checkbox"> Maintenance Mode
+                    </label>
+                    <label style="display: block; margin-bottom: 0.5rem;">
+                        <input type="checkbox" checked> Auto Backups
+                    </label>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Security Settings</h3>
+                <div style="margin: 1rem 0;">
+                    <p><strong>Last Security Audit:</strong> January 10, 2024</p>
+                    <p><strong>SSL Certificate:</strong> Valid until December 31, 2024</p>
+                    <p><strong>Two-Factor Auth:</strong> Enabled for all admins</p>
+                    <p><strong>Data Encryption:</strong> AES-256</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Navigation functionality
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+
+            document.getElementById(sectionId).style.display = 'block';
+
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // School management functions
+        function addSchool() {
+            showModal('Add New School', `
+                <div class="form-group">
+                    <label class="form-label">School Name</label>
+                    <input type="text" class="form-input" id="schoolName" placeholder="Enter school name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contact Person</label>
+                    <input type="text" class="form-input" id="contactPerson" placeholder="Enter contact person">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="schoolEmail" placeholder="Enter email">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" class="form-input" id="schoolPhone" placeholder="Enter phone">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subscription Plan</label>
+                    <select class="form-input" id="subscriptionPlan">
+                        <option value="trial">Trial</option>
+                        <option value="standard">Standard</option>
+                        <option value="premium">Premium</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="saveSchool()">Save School</button>
+            `);
+        }
+
+        function viewSchool(schoolId) {
+            showNotification(`Viewing school ${schoolId}`, 'success');
+        }
+
+        function editSchool(schoolId) {
+            showNotification(`Editing school ${schoolId}`, 'success');
+        }
+
+        function impersonateSchool(schoolId) {
+            showNotification(`Accessing school ${schoolId} as admin`, 'success');
+        }
+
+        function exportSchools() {
+            showNotification('Exporting school data...', 'success');
+        }
+
+        // User management functions
+        function addUser() {
+            showNotification('Adding new user', 'success');
+        }
+
+        function editUser(userId) {
+            showNotification(`Editing user ${userId}`, 'success');
+        }
+
+        function deactivateUser(userId) {
+            showNotification(`Deactivating user ${userId}`, 'success');
+        }
+
+        function bulkImport() {
+            showNotification('Bulk import users', 'success');
+        }
+
+        // Billing functions
+        function viewBilling(schoolId) {
+            showNotification(`Viewing billing for school ${schoolId}`, 'success');
+        }
+
+        function updatePlan(schoolId) {
+            showNotification(`Updating plan for school ${schoolId}`, 'success');
+        }
+
+        // Support functions
+        function viewTicket(ticketId) {
+            showNotification(`Viewing ticket ${ticketId}`, 'success');
+        }
+
+        function assignTicket(ticketId) {
+            showNotification(`Assigning ticket ${ticketId}`, 'success');
+        }
+
+        function updateTicket(ticketId) {
+            showNotification(`Updating ticket ${ticketId}`, 'success');
+        }
+
+        // Utility functions
+        function saveSchool() {
+            const name = document.getElementById('schoolName').value;
+            const contact = document.getElementById('contactPerson').value;
+            const email = document.getElementById('schoolEmail').value;
+            const phone = document.getElementById('schoolPhone').value;
+            const plan = document.getElementById('subscriptionPlan').value;
+
+            if (!name || !contact || !email || !phone) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            showNotification('School added successfully!', 'success');
+            closeModal();
+        }
+
+        function showModal(title, content) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                    <h3>${title}</h3>
+                    ${content}
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                document.body.removeChild(modal);
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('overview');
+        });
+    </script>
+</body>
+</html> 
