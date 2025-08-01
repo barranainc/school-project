@@ -24,7 +24,6 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Chip,
   LinearProgress,
   Table,
   TableBody,
@@ -33,20 +32,12 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Badge,
-  ListItemAvatar,
-  Switch,
-  FormControlLabel,
+  Alert,
   Select,
   FormControl,
   InputLabel,
-  Alert,
-  CircularProgress,
-  Tabs,
-  Tab,
 } from '@mui/material';
 import {
-  Menu as MenuIcon,
   Dashboard,
   Business,
   People,
@@ -277,7 +268,7 @@ const SuperAdminDashboard: React.FC = () => {
                   <Typography variant="body2" color="text.secondary">Active Schools</Typography>
                 </Box>
               </Box>
-              <Chip label="+12 this month" color="success" size="small" />
+              {/* <Chip label="+12 this month" color="success" size="small" /> */}
             </CardContent>
           </Card>
         </Grid>
@@ -291,7 +282,7 @@ const SuperAdminDashboard: React.FC = () => {
                   <Typography variant="body2" color="text.secondary">Students Managed</Typography>
                 </Box>
               </Box>
-              <Chip label="+2,340 this month" color="success" size="small" />
+              {/* <Chip label="+2,340 this month" color="success" size="small" /> */}
             </CardContent>
           </Card>
         </Grid>
@@ -305,7 +296,7 @@ const SuperAdminDashboard: React.FC = () => {
                   <Typography variant="body2" color="text.secondary">Reports Generated</Typography>
                 </Box>
               </Box>
-              <Chip label="+15,670 this month" color="success" size="small" />
+              {/* <Chip label="+15,670 this month" color="success" size="small" /> */}
             </CardContent>
           </Card>
         </Grid>
@@ -319,7 +310,7 @@ const SuperAdminDashboard: React.FC = () => {
                   <Typography variant="body2" color="text.secondary">Monthly Revenue</Typography>
                 </Box>
               </Box>
-              <Chip label="+8% this month" color="success" size="small" />
+              {/* <Chip label="+8% this month" color="success" size="small" /> */}
             </CardContent>
           </Card>
         </Grid>
@@ -415,21 +406,21 @@ const SuperAdminDashboard: React.FC = () => {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  <Chip
+                  {/* <Chip
                     label={school.status}
                     color={school.status === 'active' ? 'success' : 'warning'}
                     size="small"
-                  />
+                  /> */}
                 </TableCell>
                 <TableCell>{school.students}</TableCell>
                 <TableCell>{school.teachers}</TableCell>
                 <TableCell>{school.reports.toLocaleString()}</TableCell>
                 <TableCell>
-                  <Chip
+                  {/* <Chip
                     label={school.subscription}
                     color={school.subscription === 'Premium' ? 'primary' : 'default'}
                     size="small"
-                  />
+                  /> */}
                 </TableCell>
                 <TableCell>{school.renewalDate}</TableCell>
                 <TableCell>
@@ -498,29 +489,26 @@ const SuperAdminDashboard: React.FC = () => {
                 </TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
-                  <Chip
+                  {/* <Chip
                     label={user.role}
                     color={user.role === 'Super Admin' ? 'error' : 'primary'}
                     size="small"
-                  />
+                  /> */}
                 </TableCell>
                 <TableCell>
-                  <Chip
+                  {/* <Chip
                     label={user.status}
                     color="success"
                     size="small"
-                  />
+                  /> */}
                 </TableCell>
                 <TableCell>{user.lastLogin}</TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {user.permissions.map((permission, index) => (
-                      <Chip
-                        key={index}
-                        label={permission}
-                        size="small"
-                        variant="outlined"
-                      />
+                      <Typography key={index} variant="caption" sx={{ mr: 0.5 }}>
+                        {permission}
+                      </Typography>
                     ))}
                   </Box>
                 </TableCell>
@@ -603,19 +591,18 @@ const SuperAdminDashboard: React.FC = () => {
               <TableRow key={index}>
                 <TableCell>{billing.school}</TableCell>
                 <TableCell>
-                  <Chip
-                    label={billing.plan}
-                    color={billing.plan === 'Premium' ? 'primary' : 'default'}
-                    size="small"
-                  />
+                  <Typography variant="body2" color="primary">
+                    {billing.plan}
+                  </Typography>
                 </TableCell>
                 <TableCell>${billing.amount.toLocaleString()}</TableCell>
                 <TableCell>
-                  <Chip
-                    label={billing.status}
-                    color={billing.status === 'paid' ? 'success' : billing.status === 'pending' ? 'warning' : 'default'}
-                    size="small"
-                  />
+                  <Typography 
+                    variant="body2" 
+                    color={billing.status === 'paid' ? 'success.main' : billing.status === 'pending' ? 'warning.main' : 'text.secondary'}
+                  >
+                    {billing.status}
+                  </Typography>
                 </TableCell>
                 <TableCell>{billing.dueDate}</TableCell>
                 <TableCell>{billing.students}</TableCell>

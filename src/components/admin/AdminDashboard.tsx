@@ -1,37 +1,38 @@
 import React, { useState } from 'react';
 import {
   Box,
+  Drawer,
   AppBar,
   Toolbar,
-  Typography,
-  Drawer,
   List,
+  Typography,
+  Divider,
+  IconButton,
   ListItem,
   ListItemIcon,
   ListItemText,
-  IconButton,
   Avatar,
   Menu,
   MenuItem,
-  Divider,
   Badge,
   Chip,
 } from '@mui/material';
 import {
   Dashboard,
   People,
-  School,
-  Assessment,
-  Settings,
-  Notifications,
-  AccountCircle,
-  Logout,
-  Analytics,
   Message,
-  Report,
+  Settings,
+  AccountCircle,
+  Notifications,
+  School,
+  Logout,
+  Assessment,
+  Analytics,
   Business,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import LanguageSelector from '../common/LanguageSelector';
 import ExecutiveSummary from './sections/ExecutiveSummary';
 import StudentManagement from './sections/StudentManagement';
 import TeacherManagement from './sections/TeacherManagement';
@@ -46,7 +47,7 @@ const menuItems = [
   { text: 'Executive Summary', icon: <Dashboard />, section: 'dashboard' },
   { text: 'Student Management', icon: <People />, section: 'students' },
   { text: 'Teacher Management', icon: <School />, section: 'teachers' },
-  { text: 'Report Configuration', icon: <Report />, section: 'reports' },
+  { text: 'Report Configuration', icon: <Assessment />, section: 'reports' },
   { text: 'Communication Center', icon: <Message />, section: 'communication' },
   { text: 'Advanced Analytics', icon: <Analytics />, section: 'analytics' },
   { text: 'System Settings', icon: <Settings />, section: 'settings' },
@@ -123,6 +124,9 @@ const AdminDashboard: React.FC = () => {
                 {user?.firstName?.charAt(0)}
               </Avatar>
             </IconButton>
+
+            {/* Language Selector */}
+            <LanguageSelector />
           </Box>
         </Toolbar>
       </AppBar>

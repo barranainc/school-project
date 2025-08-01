@@ -7,56 +7,51 @@ import {
   Typography,
   TextField,
   Button,
+  Switch,
+  FormControlLabel,
   Chip,
   List,
   ListItem,
   ListItemText,
+  ListItemSecondaryAction,
   ListItemAvatar,
-  Avatar,
   IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Switch,
-  FormControlLabel,
-  Alert,
-  Paper,
+  Avatar,
+  Badge,
+  LinearProgress,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Divider,
-  LinearProgress,
-  Badge,
+  Paper,
+  Alert,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import {
-  People,
-  School,
-  Assessment,
-  Timer,
-  TrendingUp,
-  TrendingDown,
   Add,
   Edit,
   Delete,
-  Visibility,
+  Search,
+  FilterList,
+  TrendingUp,
+  TrendingDown,
+  CheckCircle,
+  Warning,
+  Info,
+  School,
   Email,
   Phone,
   CalendarToday,
   Star,
-  CheckCircle,
-  Warning,
-  Info,
-  Book,
-  VideoLibrary,
-  Help,
 } from '@mui/icons-material';
 import { useData } from '../../../contexts/DataContext';
 
@@ -338,7 +333,7 @@ const TeacherManagement: React.FC = () => {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h6">Training</Typography>
                 <Badge badgeContent={performanceMetrics.trainingNeeded} color="error">
-                  <Book />
+                  {/* <Book /> */}
                 </Badge>
               </Box>
               <Button
@@ -362,7 +357,7 @@ const TeacherManagement: React.FC = () => {
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center' }}>
-                  <People sx={{ mr: 1 }} />
+                  {/* <People sx={{ mr: 1 }} /> */}
                   Teacher Directory
                 </Typography>
                 <Button
@@ -414,7 +409,7 @@ const TeacherManagement: React.FC = () => {
                         <TableCell>{teacher.reportsGenerated}</TableCell>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Timer sx={{ fontSize: 16 }} />
+                            {/* <Timer sx={{ fontSize: 16 }} /> */}
                             <Typography variant="body2">
                               {teacher.avgTimePerReport} min
                             </Typography>
@@ -449,7 +444,7 @@ const TeacherManagement: React.FC = () => {
                               color="primary"
                               onClick={() => handleOpenTeacherDialog('view', teacher.id)}
                             >
-                              <Visibility />
+                              {/* <Visibility /> */}
                             </IconButton>
                             <IconButton 
                               size="small" 
@@ -483,7 +478,7 @@ const TeacherManagement: React.FC = () => {
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                <Assessment sx={{ mr: 1 }} />
+                {/* <Assessment sx={{ mr: 1 }} /> */}
                 Reports Generated Per Teacher
               </Typography>
               <List>
@@ -519,7 +514,7 @@ const TeacherManagement: React.FC = () => {
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                <Timer sx={{ mr: 1 }} />
+                {/* <Timer sx={{ mr: 1 }} /> */}
                 Average Time per Voice Note
               </Typography>
               <List>
@@ -560,7 +555,7 @@ const TeacherManagement: React.FC = () => {
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                <Book sx={{ mr: 1 }} />
+                {/* <Book sx={{ mr: 1 }} /> */}
                 Training & Resources
               </Typography>
 
@@ -570,9 +565,9 @@ const TeacherManagement: React.FC = () => {
                     <Card variant="outlined">
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          {resource.type === 'video' && <VideoLibrary color="primary" />}
-                          {resource.type === 'guide' && <Book color="primary" />}
-                          {resource.type === 'interactive' && <Help color="primary" />}
+                          {/* {resource.type === 'video' && <VideoLibrary color="primary" />} */}
+                          {/* {resource.type === 'guide' && <Book color="primary" />} */}
+                          {/* {resource.type === 'interactive' && <Help color="primary" />} */}
                           <Typography variant="h6" sx={{ ml: 1 }}>
                             {resource.title}
                           </Typography>
@@ -597,7 +592,7 @@ const TeacherManagement: React.FC = () => {
                           variant="outlined"
                           fullWidth
                           sx={{ mt: 2 }}
-                          startIcon={<Visibility />}
+                          // startIcon={<Visibility />}
                         >
                           View Resource
                         </Button>

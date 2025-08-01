@@ -46,6 +46,7 @@ import {
   Phone,
 } from '@mui/icons-material';
 import { useData } from '../../../contexts/DataContext';
+import toast from 'react-hot-toast';
 
 const StudentManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -77,6 +78,84 @@ const StudentManagement: React.FC = () => {
 
   const grades = ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5'];
   const statuses = ['active', 'pending', 'inactive'];
+
+  const [openImportDialog, setOpenImportDialog] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importPreview, setImportPreview] = useState<any[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'text/csv') {
+      setImportFile(file);
+      previewCSV(file);
+    } else {
+      toast.error('Please select a valid CSV file');
+    }
+  };
+
+  const previewCSV = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      const lines = text.split('\n');
+      const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+      const data = lines.slice(1, 6).map(line => {
+        const values = line.split(',').map(v => v.replace(/"/g, '').trim());
+        const row: any = {};
+        headers.forEach((header, index) => {
+          row[header] = values[index] || '';
+        });
+        return row;
+      });
+      setImportPreview(data);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleImportStudents = () => {
+    if (!importFile) return;
+    
+    setIsImporting(true);
+    toast.loading('Importing students...');
+    
+    // Simulate import process
+    setTimeout(() => {
+      // In a real app, this would parse the CSV and add students
+      const newStudents = importPreview.map((row, index) => ({
+        id: `ST${String(students.length + index + 1).padStart(3, '0')}`,
+        firstName: row['First Name'] || row['firstName'] || 'Unknown',
+        lastName: row['Last Name'] || row['lastName'] || 'Unknown',
+        grade: row['Grade'] || row['grade'] || 'Grade 1',
+        class: row['Class'] || row['class'] || '1A',
+        status: 'active' as const,
+        lastReport: new Date().toISOString().split('T')[0],
+        parentEmail: row['Parent Email'] || row['parentEmail'] || 'parent@email.com',
+        parentPhone: row['Parent Phone'] || row['parentPhone'] || '+1-555-0000',
+        avatar: `${row['First Name']?.[0] || 'U'}${row['Last Name']?.[0] || 'N'}`,
+        teacherId: 'T001',
+        parentId: `P${String(students.length + index + 1).padStart(3, '0')}`,
+        enrollmentDate: new Date().toISOString().split('T')[0],
+        dateOfBirth: '2018-01-01',
+        address: '123 Main St, City, State',
+        emergencyContact: '+1-555-9999',
+        medicalInfo: 'No known allergies',
+        academicLevel: 'Standard',
+        notes: 'Imported student',
+      }));
+      
+      // Add students to context
+      newStudents.forEach(student => {
+        addStudent(student);
+      });
+      
+      setImportFile(null);
+      setImportPreview([]);
+      setOpenImportDialog(false);
+      setIsImporting(false);
+      toast.success(`Successfully imported ${newStudents.length} students!`);
+    }, 2000);
+  };
 
   // Filter students based on search and filters
   const filteredStudents = students.filter(student => {
@@ -224,18 +303,41 @@ const StudentManagement: React.FC = () => {
   };
 
   const handleExportStudents = () => {
-    const dataToExport = selectedStudents.length > 0 
-      ? students.filter(s => selectedStudents.includes(s.id))
+    const dataToExport = selectedStudents.length > 0
+      ? students.filter(student => selectedStudents.includes(student.id))
       : students;
-    
-    // In a real app, this would generate and download a CSV/Excel file
-    console.log('Exporting students:', dataToExport);
-    alert('Student data exported successfully!');
-  };
 
-  const handleImportStudents = () => {
-    // In a real app, this would open a file picker and process the file
-    alert('Import functionality will be implemented here');
+    // Convert to CSV format
+    const headers = ['ID', 'First Name', 'Last Name', 'Grade', 'Class', 'Status', 'Parent Email', 'Parent Phone', 'Last Report'];
+    const csvData = dataToExport.map(student => [
+      student.id,
+      student.firstName,
+      student.lastName,
+      student.grade,
+      student.class,
+      student.status,
+      student.parentEmail,
+      student.parentPhone,
+      student.lastReport
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.map(field => `"${field}"`).join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `students_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success(`Exported ${dataToExport.length} students successfully!`);
   };
 
   const getStatusColor = (status: string) => {
@@ -318,7 +420,7 @@ const StudentManagement: React.FC = () => {
                 <Button
                   variant="outlined"
                   startIcon={<Upload />}
-                  onClick={handleImportStudents}
+                  onClick={() => setOpenImportDialog(true)}
                 >
                   Import
                 </Button>
@@ -728,6 +830,64 @@ const StudentManagement: React.FC = () => {
             onClick={confirmDeleteStudents}
           >
             Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Import Dialog */}
+      <Dialog open={openImportDialog} onClose={() => setOpenImportDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Import Students from CSV</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Select a CSV file to import student records. The file should have columns like "First Name", "Last Name", "Grade", "Class", "Status", "Parent Email", "Parent Phone", etc.
+          </Typography>
+          <input
+            type="file"
+            accept=".csv"
+            style={{ display: 'none' }}
+            id="import-file-input"
+            onChange={handleFileUpload}
+          />
+          <label htmlFor="import-file-input">
+            <Button variant="outlined" component="span" fullWidth sx={{ mb: 2 }}>
+              {importFile ? importFile.name : 'Choose CSV File to Import'}
+            </Button>
+          </label>
+
+          {importFile && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle2" gutterBottom>Preview of Imported Data:</Typography>
+              <TableContainer component={Paper} sx={{ boxShadow: 'none' }}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      {Object.keys(importPreview[0] || {}).map(header => (
+                        <TableCell key={header}>{header}</TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {importPreview.map((row, index) => (
+                      <TableRow key={index}>
+                        {Object.values(row).map((value, j) => (
+                          <TableCell key={j}>{String(value)}</TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenImportDialog(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={handleImportStudents}
+            disabled={!importFile || isImporting}
+          >
+            {isImporting ? 'Importing...' : 'Import Students'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -9,7 +9,6 @@ import {
   Divider,
   IconButton,
   ListItem,
-  ListItemButton,
   ListItemIcon,
   ListItemText,
   Avatar,
@@ -23,27 +22,15 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Chip,
   LinearProgress,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Badge,
   ListItemAvatar,
-  Switch,
-  FormControlLabel,
   Accordion,
   AccordionSummary,
   AccordionDetails,
   ListItemSecondaryAction,
 } from '@mui/material';
 import {
-  Menu as MenuIcon,
   Dashboard,
   People,
   Assessment,
@@ -52,21 +39,8 @@ import {
   AccountCircle,
   Notifications,
   School,
-  TrendingUp,
-  TrendingDown,
   CheckCircle,
   Warning,
-  Schedule,
-  Email,
-  Phone,
-  LocationOn,
-  Edit,
-  Delete,
-  Visibility,
-  Send,
-  Archive,
-  Star,
-  StarBorder,
   Logout,
   ExpandMore,
 } from '@mui/icons-material';
@@ -387,7 +361,7 @@ const ParentsUI: React.FC = () => {
                       <Button
                         size="small"
                         variant="outlined"
-                        startIcon={<Email />}
+                        startIcon={<Message />}
                         onClick={handleContactTeacher}
                       >
                         Message

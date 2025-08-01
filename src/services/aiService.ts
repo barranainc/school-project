@@ -1,366 +1,317 @@
-import axios from 'axios';
+// AI Service for Barrana.ai
+// This service handles voice-to-text transcription and AI report generation
 
-export interface AIReportRequest {
-  studentId: string;
-  voiceTranscription: string;
-  template: string;
-  context?: {
-    previousReports?: any[];
-    studentProfile?: any;
-    academicHistory?: any;
-  };
+export interface TranscriptionRequest {
+  audioBlob: Blob;
+  language?: string;
+  studentName?: string;
 }
 
-export interface AIReportResponse {
-  reportId: string;
-  content: {
-    academicProgress: {
-      math: number;
-      reading: number;
-      science: number;
-      socialStudies: number;
-    };
-    socialDevelopment: {
-      collaboration: string;
-      communication: string;
-      leadership: string;
-    };
-    areasForGrowth: string[];
-    recommendations: string[];
-    personalizedInsights: string[];
-  };
-  metadata: {
-    aiModel: string;
-    confidence: number;
-    processingTime: number;
-    language: string;
-    generatedAt: string;
-  };
-}
-
-export interface VoiceProcessingResult {
+export interface ReportGenerationRequest {
   transcription: string;
-  confidence: number;
-  language: string;
-  processingTime: number;
-  segments: {
-    start: number;
-    end: number;
-    text: string;
-    confidence: number;
-  }[];
-  sentiment: 'positive' | 'neutral' | 'negative';
-  keywords: string[];
+  studentName: string;
+  grade: string;
+  template?: string;
+}
+
+export interface AIResponse {
+  success: boolean;
+  data?: any;
+  error?: string;
 }
 
 export interface AIInsight {
-  type: 'academic' | 'social' | 'behavioral' | 'recommendation';
+  id: string;
+  type: 'academic' | 'behavioral' | 'social' | 'recommendation';
   title: string;
   description: string;
   confidence: number;
-  evidence: string[];
+  studentId: string;
+  createdAt: Date;
   actionable: boolean;
-  priority: 'high' | 'medium' | 'low';
-}
-
-export interface AIPrediction {
-  metric: string;
-  currentValue: number;
-  predictedValue: number;
-  confidence: number;
-  timeframe: string;
-  factors: string[];
-  recommendations: string[];
+  priority: 'low' | 'medium' | 'high';
 }
 
 class AIService {
-  private baseURL = 'http://localhost:5001/api';
+  private apiKey: string | null = null;
+  private baseUrl: string = 'https://api.openai.com/v1';
 
-  // Generate AI-powered report
-  async generateReport(request: AIReportRequest): Promise<AIReportResponse> {
-    try {
-      const response = await axios.post(`${this.baseURL}/ai/generate-report`, {
-        ...request,
-        timestamp: new Date().toISOString()
-      });
-      return response.data.data;
-    } catch (error) {
-      console.error('Error generating AI report:', error);
-      // Return mock data for demo
-      return {
-        reportId: 'R' + Date.now(),
-        content: {
-          academicProgress: {
-            math: 88,
-            reading: 92,
-            science: 85,
-            socialStudies: 90,
-          },
-          socialDevelopment: {
-            collaboration: 'Excellent',
-            communication: 'Good',
-            leadership: 'Developing',
-          },
-          areasForGrowth: [
-            'Continue practicing multiplication tables',
-            'Work on reading comprehension strategies',
-            'Develop more confidence in group discussions'
-          ],
-          recommendations: [
-            'Read for 20 minutes daily',
-            'Practice math problems at home',
-            'Encourage participation in class activities'
-          ],
-          personalizedInsights: [
-            'Emma shows strong analytical thinking in mathematics',
-            'Her reading fluency has improved significantly this month',
-            'She demonstrates excellent teamwork skills during group projects'
-          ]
-        },
-        metadata: {
-          aiModel: 'GPT-4',
-          confidence: 0.94,
-          processingTime: 2.3,
-          language: 'en-US',
-          generatedAt: new Date().toISOString()
-        }
-      };
-    }
+  // Initialize with API key
+  initialize(apiKey: string) {
+    this.apiKey = apiKey;
   }
 
-  // Process voice recording
-  async processVoice(audioBlob: Blob, language: string = 'en-US'): Promise<VoiceProcessingResult> {
-    try {
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.wav');
-      formData.append('language', language);
-      formData.append('timestamp', new Date().toISOString());
+  // Voice to Text Transcription
+  async transcribeAudio(request: TranscriptionRequest): Promise<AIResponse> {
+    if (!this.apiKey) {
+      return {
+        success: false,
+        error: 'API key not configured. Please add your OpenAI API key in settings.'
+      };
+    }
 
-      const response = await axios.post(`${this.baseURL}/ai/process-voice`, formData, {
+    try {
+      // Convert blob to base64
+      const base64Audio = await this.blobToBase64(request.audioBlob);
+      
+      const response = await fetch(`${this.baseUrl}/audio/transcriptions`, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          file: base64Audio,
+          model: 'whisper-1',
+          language: request.language || 'en',
+          prompt: `This is a teacher's voice note about student ${request.studentName}. Please transcribe it clearly.`
+        })
       });
 
-      return response.data.data;
-    } catch (error) {
-      console.error('Error processing voice:', error);
-      // Return mock data for demo
+      if (!response.ok) {
+        throw new Error(`Transcription failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
       return {
-        transcription: 'Emma has shown excellent progress in mathematics this month. She demonstrates strong problem-solving skills and actively participates in class discussions. Her reading comprehension has improved significantly, and she shows great enthusiasm for science experiments.',
-        confidence: 0.96,
-        language: 'en-US',
-        processingTime: 1.8,
-        segments: [
-          {
-            start: 0,
-            end: 2.5,
-            text: 'Emma has shown excellent progress in mathematics this month.',
-            confidence: 0.98
-          },
-          {
-            start: 2.5,
-            end: 5.2,
-            text: 'She demonstrates strong problem-solving skills and actively participates in class discussions.',
-            confidence: 0.95
-          }
-        ],
-        sentiment: 'positive',
-        keywords: ['excellent', 'progress', 'mathematics', 'problem-solving', 'participation']
+        success: true,
+        data: result.text
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Transcription failed'
       };
     }
   }
 
-  // Get AI insights for student
+  // AI Report Generation
+  async generateReport(request: ReportGenerationRequest): Promise<AIResponse> {
+    if (!this.apiKey) {
+      return {
+        success: false,
+        error: 'API key not configured. Please add your OpenAI API key in settings.'
+      };
+    }
+
+    try {
+      const prompt = this.buildReportPrompt(request);
+      
+      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert educational assistant that creates professional student progress reports. Generate clear, constructive, and detailed reports based on teacher observations.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Report generation failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      return {
+        success: true,
+        data: result.choices[0].message.content
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Report generation failed'
+      };
+    }
+  }
+
+  // Build comprehensive report prompt
+  private buildReportPrompt(request: ReportGenerationRequest): string {
+    return `
+Create a comprehensive student progress report for ${request.studentName} (${request.grade}) based on the following teacher observations:
+
+TEACHER OBSERVATIONS:
+${request.transcription}
+
+Please structure the report with the following sections:
+
+1. **Academic Performance Summary**
+   - Key achievements and progress
+   - Areas of strength
+   - Areas for growth
+
+2. **Social-Emotional Development**
+   - Peer interactions
+   - Emotional regulation
+   - Confidence and participation
+
+3. **Learning Habits & Skills**
+   - Work habits
+   - Problem-solving abilities
+   - Creativity and critical thinking
+
+4. **Specific Recommendations**
+   - Actionable suggestions for continued growth
+   - Home support strategies
+   - Next steps for development
+
+5. **Overall Assessment**
+   - Brief summary of current progress
+   - Positive reinforcement
+
+Please make the report:
+- Professional and constructive
+- Specific to the observations provided
+- Age-appropriate for ${request.grade}
+- Encouraging and supportive
+- Actionable for parents and teachers
+
+Format the report in markdown with clear headings and bullet points where appropriate.
+    `;
+  }
+
+  // Convert blob to base64
+  private async blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(',')[1]); // Remove data URL prefix
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  // Test API connection
+  async testConnection(): Promise<AIResponse> {
+    if (!this.apiKey) {
+      return {
+        success: false,
+        error: 'API key not configured'
+      };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/models`, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API test failed: ${response.statusText}`);
+      }
+
+      return {
+        success: true,
+        data: 'API connection successful'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'API test failed'
+      };
+    }
+  }
+
+  // Get usage statistics
+  async getUsage(): Promise<AIResponse> {
+    if (!this.apiKey) {
+      return {
+        success: false,
+        error: 'API key not configured'
+      };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/usage`, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Usage fetch failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      return {
+        success: true,
+        data: result
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Usage fetch failed'
+      };
+    }
+  }
+
+  // Get AI insights for a student
   async getStudentInsights(studentId: string): Promise<AIInsight[]> {
-    try {
-      const response = await axios.get(`${this.baseURL}/ai/insights/${studentId}`);
-      return response.data.data;
-    } catch (error) {
-      console.error('Error fetching AI insights:', error);
-      // Return mock data for demo
-      return [
-        {
-          type: 'academic',
-          title: 'Strong Mathematical Foundation',
-          description: 'Emma demonstrates excellent mathematical reasoning and problem-solving abilities.',
-          confidence: 0.92,
-          evidence: ['Consistent high scores in math assessments', 'Strong performance in problem-solving tasks'],
-          actionable: true,
-          priority: 'high'
-        },
-        {
-          type: 'social',
-          title: 'Leadership Potential',
-          description: 'Emma shows natural leadership qualities in group activities.',
-          confidence: 0.87,
-          evidence: ['Frequently takes initiative in group projects', 'Peers often follow her suggestions'],
-          actionable: true,
-          priority: 'medium'
-        },
-        {
-          type: 'recommendation',
-          title: 'Advanced Reading Program',
-          description: 'Consider enrolling Emma in an advanced reading program to further develop her comprehension skills.',
-          confidence: 0.89,
-          evidence: ['Above-grade reading level', 'Strong comprehension scores'],
-          actionable: true,
-          priority: 'medium'
-        }
-      ];
-    }
-  }
-
-  // Get AI predictions
-  async getPredictions(studentId: string, timeframe: string = 'quarter'): Promise<AIPrediction[]> {
-    try {
-      const response = await axios.get(`${this.baseURL}/ai/predictions/${studentId}`, {
-        params: { timeframe }
-      });
-      return response.data.data;
-    } catch (error) {
-      console.error('Error fetching AI predictions:', error);
-      // Return mock data for demo
-      return [
-        {
-          metric: 'Mathematics Performance',
-          currentValue: 88,
-          predictedValue: 92,
-          confidence: 0.91,
-          timeframe: 'Next Quarter',
-          factors: ['Consistent study habits', 'Strong foundation', 'Active participation'],
-          recommendations: ['Continue current study routine', 'Practice advanced problems']
-        },
-        {
-          metric: 'Reading Comprehension',
-          currentValue: 92,
-          predictedValue: 95,
-          confidence: 0.88,
-          timeframe: 'Next Quarter',
-          factors: ['Regular reading practice', 'Improved vocabulary', 'Better focus'],
-          recommendations: ['Read diverse materials', 'Practice critical thinking questions']
-        }
-      ];
-    }
-  }
-
-  // Analyze report quality
-  async analyzeReportQuality(reportId: string): Promise<{
-    overallScore: number;
-    completeness: number;
-    clarity: number;
-    personalization: number;
-    suggestions: string[];
-  }> {
-    try {
-      const response = await axios.get(`${this.baseURL}/ai/analyze-report/${reportId}`);
-      return response.data.data;
-    } catch (error) {
-      console.error('Error analyzing report quality:', error);
-      // Return mock data for demo
-      return {
-        overallScore: 4.7,
-        completeness: 0.95,
-        clarity: 0.92,
-        personalization: 0.89,
-        suggestions: [
-          'Include more specific examples of student work',
-          'Add more detailed recommendations for improvement',
-          'Consider including parent feedback section'
-        ]
-      };
-    }
-  }
-
-  // Generate personalized recommendations
-  async generateRecommendations(
-    studentId: string,
-    context: {
-      academicPerformance?: any;
-      socialBehavior?: any;
-      interests?: string[];
-      goals?: string[];
-    }
-  ): Promise<{
-    academic: string[];
-    social: string[];
-    personal: string[];
-    priority: 'high' | 'medium' | 'low';
-  }> {
-    try {
-      const response = await axios.post(`${this.baseURL}/ai/recommendations`, {
+    // Mock implementation for demo
+    return [
+      {
+        id: 'insight-1',
+        type: 'academic',
+        title: 'Strong Mathematical Foundation',
+        description: 'Student shows excellent problem-solving skills in mathematics. Consider advanced placement opportunities.',
+        confidence: 0.92,
         studentId,
-        context,
-        timestamp: new Date().toISOString()
-      });
-      return response.data.data;
-    } catch (error) {
-      console.error('Error generating recommendations:', error);
-      // Return mock data for demo
-      return {
-        academic: [
-          'Practice multiplication tables daily for 10 minutes',
-          'Read chapter books for 20 minutes each day',
-          'Complete additional math problems for reinforcement'
-        ],
-        social: [
-          'Participate in more group discussions',
-          'Take on leadership roles in class projects',
-          'Practice active listening during conversations'
-        ],
-        personal: [
-          'Set weekly reading goals',
-          'Keep a learning journal',
-          'Practice time management skills'
-        ],
+        createdAt: new Date(),
+        actionable: true,
+        priority: 'high'
+      },
+      {
+        id: 'insight-2',
+        type: 'behavioral',
+        title: 'Improved Classroom Engagement',
+        description: 'Student has shown significant improvement in classroom participation over the last month.',
+        confidence: 0.87,
+        studentId,
+        createdAt: new Date(),
+        actionable: true,
         priority: 'medium'
-      };
-    }
-  }
-
-  // Get AI model performance metrics
-  async getModelPerformance(): Promise<{
-    accuracy: number;
-    processingTime: number;
-    errorRate: number;
-    modelVersion: string;
-    lastUpdated: string;
-  }> {
-    try {
-      const response = await axios.get(`${this.baseURL}/ai/model-performance`);
-      return response.data.data;
-    } catch (error) {
-      console.error('Error fetching model performance:', error);
-      // Return mock data for demo
-      return {
-        accuracy: 0.96,
-        processingTime: 2.3,
-        errorRate: 0.04,
-        modelVersion: 'GPT-4-v1.2',
-        lastUpdated: '2024-01-15T10:00:00Z'
-      };
-    }
-  }
-
-  // Optimize AI prompts
-  async optimizePrompt(prompt: string, context: any): Promise<{
-    optimizedPrompt: string;
-    confidence: number;
-    reasoning: string;
-  }> {
-    try {
-      const response = await axios.post(`${this.baseURL}/ai/optimize-prompt`, {
-        prompt,
-        context,
-        timestamp: new Date().toISOString()
-      });
-      return response.data.data;
-    } catch (error) {
-      console.error('Error optimizing prompt:', error);
-      throw new Error('Failed to optimize prompt');
-    }
+      },
+      {
+        id: 'insight-3',
+        type: 'social',
+        title: 'Leadership Potential',
+        description: 'Student demonstrates natural leadership qualities in group activities.',
+        confidence: 0.78,
+        studentId,
+        createdAt: new Date(),
+        actionable: true,
+        priority: 'medium'
+      },
+      {
+        id: 'insight-4',
+        type: 'recommendation',
+        title: 'Reading Enhancement Opportunity',
+        description: 'Consider introducing more challenging reading materials to further develop comprehension skills.',
+        confidence: 0.85,
+        studentId,
+        createdAt: new Date(),
+        actionable: true,
+        priority: 'low'
+      }
+    ];
   }
 }
 
+// Export singleton instance
 export const aiService = new AIService();
 export default aiService; 

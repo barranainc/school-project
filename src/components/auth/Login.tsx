@@ -11,7 +11,13 @@ import {
   Select,
   MenuItem,
   Alert,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Chip,
+  Divider,
 } from '@mui/material';
+import { ExpandMore, School, ChildCare } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -51,6 +57,16 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleDemoLogin = (demoRole: string) => {
+    setRole(demoRole);
+    setEmail('demo@example.com');
+    setPassword('demo123');
+    // Auto-submit after a short delay
+    setTimeout(() => {
+      login({ email: 'demo@example.com', password: 'demo123', role: demoRole });
+    }, 100);
+  };
+
   return (
     <Box
       sx={{
@@ -62,7 +78,7 @@ const Login: React.FC = () => {
         p: 2,
       }}
     >
-      <Card sx={{ maxWidth: 400, width: '100%' }}>
+      <Card sx={{ maxWidth: 600, width: '100%' }}>
         <CardContent sx={{ p: 4 }}>
           <Typography variant="h4" align="center" gutterBottom>
             Barrana.ai
@@ -103,10 +119,10 @@ const Login: React.FC = () => {
                 onChange={(e) => setRole(e.target.value)}
                 label="Role"
               >
+                <MenuItem value="super_admin">Super Admin</MenuItem>
                 <MenuItem value="school_admin">School Admin</MenuItem>
                 <MenuItem value="teacher">Teacher</MenuItem>
                 <MenuItem value="parent">Parent</MenuItem>
-                <MenuItem value="super_admin">Super Admin</MenuItem>
               </Select>
             </FormControl>
             <Button
@@ -119,8 +135,201 @@ const Login: React.FC = () => {
             </Button>
           </Box>
 
+          <Divider sx={{ my: 3 }} />
+
+          <Typography variant="h6" gutterBottom>
+            Demo Accounts
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Click any account below to auto-fill and login
+          </Typography>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <School sx={{ mr: 1 }} />
+              <Typography variant="subtitle1">Barrana AI School</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Super Admin
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('super_admin')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Alex Chen (alex.chen@barrana.ai) - Super Admin
+                </Button>
+
+                <Typography variant="subtitle2" color="primary" gutterBottom sx={{ mt: 2 }}>
+                  School Admins
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('school_admin')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Dr. Sarah Johnson (sarah.johnson@barranaischool.edu) - School Admin
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('school_admin2')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Michael Thompson (michael.thompson@barranaischool.edu) - School Admin
+                </Button>
+
+                <Typography variant="subtitle2" color="primary" gutterBottom sx={{ mt: 2 }}>
+                  Teachers
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('teacher')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Emily Rodriguez (emily.rodriguez@barranaischool.edu) - Mathematics
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('teacher2')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Michael Chen (michael.chen@barranaischool.edu) - English Literature
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('teacher3')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Sarah Williams (sarah.williams@barranaischool.edu) - Science
+                </Button>
+
+                <Typography variant="subtitle2" color="primary" gutterBottom sx={{ mt: 2 }}>
+                  Parents
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('parent')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Jennifer Smith (jennifer.smith@email.com) - Parent
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('parent2')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Carlos Rodriguez (carlos.rodriguez@email.com) - Parent
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('parent3')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Sarah Johnson (sarah.johnson@email.com) - Parent
+                </Button>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <ChildCare sx={{ mr: 1 }} />
+              <Typography variant="subtitle1">Barrana Day Care</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Daycare Admins
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('daycare_admin')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Ms. Jessica Martinez (jessica.martinez@barranadaycare.edu) - Daycare Director
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('daycare_admin2')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Mr. Robert Wilson (robert.wilson@barranadaycare.edu) - Assistant Director
+                </Button>
+
+                <Typography variant="subtitle2" color="primary" gutterBottom sx={{ mt: 2 }}>
+                  Daycare Teachers
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('daycare_teacher')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Maria Rodriguez (maria.rodriguez@barranadaycare.edu) - Infant Care
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('daycare_teacher2')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Sarah Johnson (sarah.johnson@barranadaycare.edu) - Early Childhood Development
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('daycare_teacher3')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Emily Chen (emily.chen@barranadaycare.edu) - Toddler Education
+                </Button>
+
+                <Typography variant="subtitle2" color="primary" gutterBottom sx={{ mt: 2 }}>
+                  Daycare Parents
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('daycare_parent')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Jessica Martinez (jessica.martinez@email.com) - Parent
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('daycare_parent2')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Carlos Rodriguez (carlos.rodriguez@email.com) - Parent
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDemoLogin('daycare_parent3')}
+                  sx={{ justifyContent: 'flex-start', mb: 1 }}
+                >
+                  Sarah Johnson (sarah.johnson@email.com) - Parent
+                </Button>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+
           <Typography variant="body2" align="center" sx={{ mt: 3, color: 'text.secondary' }}>
-            Demo Credentials: Use any email/password with your selected role
+            All demo accounts use password: <strong>demo123</strong>
           </Typography>
         </CardContent>
       </Card>

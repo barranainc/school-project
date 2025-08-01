@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Types
 export interface User {
@@ -7,7 +7,7 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  role: 'super_admin' | 'school_admin' | 'teacher' | 'parent';
+  role: 'teacher' | 'parent';
   schoolId?: string;
   isEmailVerified: boolean;
   preferences?: {
@@ -37,14 +37,133 @@ export interface LoginCredentials {
   role?: string;
 }
 
-export interface RegisterData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  role: 'school_admin' | 'teacher' | 'parent';
-  schoolId?: string;
-}
+// Demo users for mobile app
+const DEMO_USERS: { [key: string]: User } = {
+  // Barrana AI School - Teachers
+  teacher1: {
+    id: 'T001',
+    firstName: 'Emily',
+    lastName: 'Rodriguez',
+    email: 'emily.rodriguez@barranaischool.edu',
+    role: 'teacher',
+    schoolId: 'SCH001',
+    isEmailVerified: true,
+    preferences: {
+      language: 'en',
+      timezone: 'America/Los_Angeles',
+      notifications: {
+        email: true,
+        push: true,
+        sms: false,
+      },
+    },
+    lastLogin: new Date().toISOString(),
+    lastActivity: new Date().toISOString(),
+  },
+  teacher2: {
+    id: 'T002',
+    firstName: 'Michael',
+    lastName: 'Chen',
+    email: 'michael.chen@barranaischool.edu',
+    role: 'teacher',
+    schoolId: 'SCH001',
+    isEmailVerified: true,
+    preferences: {
+      language: 'en',
+      timezone: 'America/Los_Angeles',
+      notifications: {
+        email: true,
+        push: true,
+        sms: false,
+      },
+    },
+    lastLogin: new Date().toISOString(),
+    lastActivity: new Date().toISOString(),
+  },
+  // Barrana Day Care - Teachers
+  daycare_teacher1: {
+    id: 'T101',
+    firstName: 'Maria',
+    lastName: 'Rodriguez',
+    email: 'maria.rodriguez@barranadaycare.edu',
+    role: 'teacher',
+    schoolId: 'SCH002',
+    isEmailVerified: true,
+    preferences: {
+      language: 'en',
+      timezone: 'America/Los_Angeles',
+      notifications: {
+        email: true,
+        push: true,
+        sms: false,
+      },
+    },
+    lastLogin: new Date().toISOString(),
+    lastActivity: new Date().toISOString(),
+  },
+  // Barrana AI School - Parents
+  parent1: {
+    id: 'P001',
+    firstName: 'Jennifer',
+    lastName: 'Smith',
+    email: 'jennifer.smith@email.com',
+    role: 'parent',
+    schoolId: 'SCH001',
+    isEmailVerified: true,
+    preferences: {
+      language: 'en',
+      timezone: 'America/Los_Angeles',
+      notifications: {
+        email: true,
+        push: true,
+        sms: true,
+      },
+    },
+    lastLogin: new Date().toISOString(),
+    lastActivity: new Date().toISOString(),
+  },
+  parent2: {
+    id: 'P002',
+    firstName: 'Carlos',
+    lastName: 'Rodriguez',
+    email: 'carlos.rodriguez@email.com',
+    role: 'parent',
+    schoolId: 'SCH001',
+    isEmailVerified: true,
+    preferences: {
+      language: 'es',
+      timezone: 'America/Los_Angeles',
+      notifications: {
+        email: true,
+        push: true,
+        sms: true,
+      },
+    },
+    lastLogin: new Date().toISOString(),
+    lastActivity: new Date().toISOString(),
+  },
+  // Barrana Day Care - Parents
+  daycare_parent1: {
+    id: 'P101',
+    firstName: 'Jessica',
+    lastName: 'Martinez',
+    email: 'jessica.martinez@email.com',
+    role: 'parent',
+    schoolId: 'SCH002',
+    isEmailVerified: true,
+    preferences: {
+      language: 'en',
+      timezone: 'America/Los_Angeles',
+      notifications: {
+        email: true,
+        push: true,
+        sms: true,
+      },
+    },
+    lastLogin: new Date().toISOString(),
+    lastActivity: new Date().toISOString(),
+  },
+};
 
 // Action types
 type AuthAction =
@@ -58,97 +177,13 @@ type AuthAction =
 // Initial state
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem('token'),
+  token: null,
   isAuthenticated: false,
   isLoading: true,
   error: null,
 };
 
-// Demo users for testing
-const DEMO_USERS: { [key: string]: User } = {
-  school_admin: {
-    id: 'admin-1',
-    firstName: 'School',
-    lastName: 'Admin',
-    email: 'admin@school.com',
-    role: 'school_admin',
-    schoolId: 'school-1',
-    isEmailVerified: true,
-    preferences: {
-      language: 'en',
-      timezone: 'UTC',
-      notifications: {
-        email: true,
-        push: true,
-        sms: false,
-      },
-    },
-    lastLogin: new Date().toISOString(),
-    lastActivity: new Date().toISOString(),
-  },
-  teacher: {
-    id: 'teacher-1',
-    firstName: 'Jane',
-    lastName: 'Teacher',
-    email: 'teacher@school.com',
-    role: 'teacher',
-    schoolId: 'school-1',
-    isEmailVerified: true,
-    preferences: {
-      language: 'en',
-      timezone: 'UTC',
-      notifications: {
-        email: true,
-        push: true,
-        sms: false,
-      },
-    },
-    lastLogin: new Date().toISOString(),
-    lastActivity: new Date().toISOString(),
-  },
-  parent: {
-    id: 'parent-1',
-    firstName: 'Sarah',
-    lastName: 'Parent',
-    email: 'parent@email.com',
-    role: 'parent',
-    schoolId: 'school-1',
-    isEmailVerified: true,
-    preferences: {
-      language: 'en',
-      timezone: 'UTC',
-      notifications: {
-        email: true,
-        push: true,
-        sms: false,
-      },
-    },
-    lastLogin: new Date().toISOString(),
-    lastActivity: new Date().toISOString(),
-  },
-  super_admin: {
-    id: 'super-1',
-    firstName: 'Super',
-    lastName: 'Admin',
-    email: 'super@barrana.ai',
-    role: 'super_admin',
-    schoolId: 'barrana',
-    isEmailVerified: true,
-    preferences: {
-      language: 'en',
-      timezone: 'UTC',
-      notifications: {
-        email: true,
-        push: true,
-        sms: false,
-      },
-    },
-    lastLogin: new Date().toISOString(),
-    lastActivity: new Date().toISOString(),
-  },
-};
-
-// Auth reducer
+// Reducer
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case 'AUTH_START':
@@ -199,151 +234,123 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   }
 };
 
-// Context interface
-interface AuthContextType extends AuthState {
+// Context
+const AuthContext = createContext<AuthState & {
   login: (credentials: LoginCredentials) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   clearError: () => void;
   updateUser: (userData: Partial<User>) => void;
-}
+}>({
+  ...initialState,
+  login: async () => {},
+  logout: () => {},
+  clearError: () => {},
+  updateUser: () => {},
+});
 
-// Create context
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Auth provider component
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+// Provider
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Set up axios defaults
-  useEffect(() => {
-    if (state.token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
-      localStorage.setItem('token', state.token);
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-      localStorage.removeItem('token');
-    }
-  }, [state.token]);
-
-  // Check if user is authenticated on mount
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          dispatch({ type: 'AUTH_START' });
-          const response = await axios.get('/api/auth/me');
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const userData = await AsyncStorage.getItem('user');
+        
+        if (token && userData) {
+          const user = JSON.parse(userData);
           dispatch({
             type: 'AUTH_SUCCESS',
-            payload: {
-              user: response.data.data.user,
-              token,
-            },
+            payload: { user, token },
           });
-        } catch (error) {
-          localStorage.removeItem('token');
-          dispatch({ type: 'AUTH_FAILURE', payload: 'Authentication failed' });
+        } else {
+          dispatch({ type: 'AUTH_FAILURE', payload: 'No stored credentials' });
         }
-      } else {
-        dispatch({ type: 'AUTH_FAILURE', payload: 'No token found' });
+      } catch (error) {
+        dispatch({ type: 'AUTH_FAILURE', payload: 'Failed to check authentication' });
       }
     };
 
     checkAuth();
   }, []);
 
-  // Login function
   const login = async (credentials: LoginCredentials) => {
+    dispatch({ type: 'AUTH_START' });
+
     try {
-      dispatch({ type: 'AUTH_START' });
+      // Demo authentication logic
+      let user: User | null = null;
       
-      // Demo authentication - use role to get demo user
-      if (credentials.role && DEMO_USERS[credentials.role]) {
-        const demoUser = DEMO_USERS[credentials.role];
-        const token = `demo-token-${credentials.role}`;
-        
-        localStorage.setItem('token', token);
-        dispatch({
-          type: 'AUTH_SUCCESS',
-          payload: { user: demoUser, token },
-        });
-        return;
+      // Check for specific demo users
+      const demoUser = Object.values(DEMO_USERS).find(u => 
+        u.email === credentials.email && credentials.password === 'demo123'
+      );
+      
+      if (demoUser) {
+        user = demoUser;
       }
-      
-      // Real API call (fallback)
-      const response = await axios.post('/api/auth/login', credentials);
-      
-      const { user, token } = response.data.data;
-      
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: { user, token },
-      });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Login failed';
+
+      if (user) {
+        const token = `demo-token-${user.id}`;
+        
+        // Store in AsyncStorage
+        await AsyncStorage.setItem('token', token);
+        await AsyncStorage.setItem('user', JSON.stringify(user));
+        
+        dispatch({ 
+          type: 'AUTH_SUCCESS', 
+          payload: { user, token } 
+        });
+      } else {
+        throw new Error('Invalid credentials');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Login failed';
       dispatch({ type: 'AUTH_FAILURE', payload: errorMessage });
-      throw new Error(errorMessage);
+      throw error;
     }
   };
 
-  // Register function
-  const register = async (data: RegisterData) => {
+  const logout = async () => {
     try {
-      dispatch({ type: 'AUTH_START' });
-      const response = await axios.post('/api/auth/register', data);
-      
-      const { user, token } = response.data.data;
-      
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: { user, token },
-      });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Registration failed';
-      dispatch({ type: 'AUTH_FAILURE', payload: errorMessage });
-      throw new Error(errorMessage);
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
+    } catch (error) {
+      console.error('Error during logout:', error);
     }
-  };
-
-  // Logout function
-  const logout = () => {
+    
     dispatch({ type: 'LOGOUT' });
   };
 
-  // Clear error function
   const clearError = () => {
     dispatch({ type: 'CLEAR_ERROR' });
   };
 
-  // Update user function
   const updateUser = (userData: Partial<User>) => {
     dispatch({ type: 'UPDATE_USER', payload: userData });
   };
 
-  const value: AuthContextType = {
-    ...state,
-    login,
-    register,
-    logout,
-    clearError,
-    updateUser,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        ...state,
+        login,
+        logout,
+        clearError,
+        updateUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-// Custom hook to use auth context
-export const useAuth = (): AuthContextType => {
+// Hook
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
-
-export default AuthContext; 
+}; 

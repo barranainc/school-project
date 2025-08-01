@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Drawer,
@@ -9,7 +9,6 @@ import {
   Divider,
   IconButton,
   ListItem,
-  ListItemButton,
   ListItemIcon,
   ListItemText,
   Avatar,
@@ -23,8 +22,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Chip,
   LinearProgress,
   Table,
   TableBody,
@@ -35,50 +32,40 @@ import {
   Paper,
   Badge,
   ListItemAvatar,
-  Switch,
-  FormControlLabel,
-  Select,
-  FormControl,
-  InputLabel,
+  Chip,
   Alert,
+  TextField,
   CircularProgress,
+  ListItemButton,
 } from '@mui/material';
 import {
-  Menu as MenuIcon,
   Dashboard,
   People,
   Assessment,
+  Message,
   Settings,
   AccountCircle,
   Notifications,
   School,
-  TrendingUp,
-  TrendingDown,
   CheckCircle,
   Warning,
-  Schedule,
-  Email,
-  Phone,
-  LocationOn,
-  Edit,
-  Delete,
-  Visibility,
-  Send,
-  Archive,
-  Star,
-  StarBorder,
   Logout,
-  RecordVoiceOver,
   Mic,
   Stop,
   PlayArrow,
   Pause,
-  Save,
-  CloudUpload,
   Person,
+  CloudUpload,
+  RecordVoiceOver,
+  Save,
+  Visibility,
+  Send,
+  AutoFixHigh,
+  Edit,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useData } from '../../contexts/DataContext';
+import toast from 'react-hot-toast';
 
 const drawerWidth = 280;
 
@@ -101,6 +88,11 @@ const TeachersUI: React.FC = () => {
   const [recordingBlob, setRecordingBlob] = useState<Blob | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string>('');
+  const [transcription, setTranscription] = useState<string>('');
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [generatedReport, setGeneratedReport] = useState<string>('');
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportStatus, setReportStatus] = useState<'draft' | 'review' | 'completed'>('draft');
   
   const { user, logout } = useAuth();
   const { students, reports, teachers } = useData();
@@ -217,13 +209,109 @@ const TeachersUI: React.FC = () => {
       
       // Simulate upload
       console.log('Saving recording for:', selectedStudent.name);
-      alert(`Recording saved for ${selectedStudent.name}!`);
+      toast.success(`Recording saved for ${selectedStudent.name}!`);
       
       // Reset recording state
       setRecordingBlob(null);
       setAudioUrl('');
       setRecordingTime(0);
     }
+  };
+
+  // AI Transcription function
+  const transcribeAudio = async () => {
+    if (!recordingBlob || !selectedStudent) return;
+    
+    setIsTranscribing(true);
+    toast.loading('Transcribing audio...');
+    
+    try {
+      // Simulate AI transcription delay
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Mock transcription based on student
+      const mockTranscriptions = {
+        'Emma Johnson': "Emma has shown excellent progress in mathematics this week. She demonstrates strong problem-solving skills and has been helping other students. Her reading comprehension has improved significantly, and she's showing great enthusiasm for science experiments. Emma is developing good social skills and works well in group activities.",
+        'Liam Smith': "Liam continues to excel in creative writing and art projects. He has a vivid imagination and expresses his ideas clearly. In mathematics, he's making steady progress and shows good logical thinking. Liam is becoming more confident in group discussions and is developing leadership qualities.",
+        'Olivia Davis': "Olivia is adapting well to the new environment. She shows curiosity in all subjects and asks thoughtful questions. Her handwriting is improving, and she's developing good study habits. Olivia is making friends and participating actively in classroom activities."
+      };
+      
+      const transcription = mockTranscriptions[selectedStudent.name as keyof typeof mockTranscriptions] || 
+        "Student has shown good progress across all subjects. They are developing well socially and academically.";
+      
+      setTranscription(transcription);
+      toast.success('Audio transcribed successfully!');
+    } catch (error) {
+      toast.error('Transcription failed. Please try again.');
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  // AI Report Generation function
+  const generateReport = async () => {
+    if (!transcription || !selectedStudent) return;
+    
+    setIsGeneratingReport(true);
+    toast.loading('Generating AI report...');
+    
+    try {
+      // Simulate AI report generation delay
+      await new Promise(resolve => setTimeout(resolve, 4000));
+      
+      // Mock AI-generated report
+      const mockReport = `# Progress Report for ${selectedStudent.name}
+
+## Academic Performance
+${transcription}
+
+## Key Achievements
+- Demonstrated strong problem-solving skills
+- Showed improvement in reading comprehension
+- Participated actively in group activities
+- Developed good study habits
+
+## Areas for Growth
+- Continue practicing mathematical concepts
+- Work on time management skills
+- Develop more confidence in public speaking
+
+## Recommendations
+- Encourage reading at home
+- Practice problem-solving exercises
+- Participate in more group activities
+
+## Next Steps
+- Continue current learning strategies
+- Focus on identified growth areas
+- Regular communication with parents
+
+*Report generated by Barrana.ai AI Assistant*`;
+
+      setGeneratedReport(mockReport);
+      setReportStatus('review');
+      toast.success('AI report generated successfully!');
+    } catch (error) {
+      toast.error('Report generation failed. Please try again.');
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
+  // Send report to parent
+  const sendReport = () => {
+    if (!generatedReport || !selectedStudent) return;
+    
+    toast.loading('Sending report to parent...');
+    
+    // Simulate sending delay
+    setTimeout(() => {
+      toast.success(`Report sent to ${selectedStudent.name}'s parent successfully!`);
+      setReportStatus('completed');
+      
+      // Add report to data context
+      // In a real app, this would be saved to the database
+    }, 2000);
   };
 
   const formatTime = (seconds: number) => {
@@ -383,7 +471,7 @@ const TeachersUI: React.FC = () => {
   const VoiceRecordingSection = () => (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Voice Recording
+        Voice Recording & AI Report Generation
       </Typography>
       
       {/* Student Selection */}
@@ -415,7 +503,7 @@ const TeachersUI: React.FC = () => {
           ) : (
             <Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Choose a student to record voice notes for their report
+                Choose a student to record voice notes for their AI-generated report
               </Typography>
               <Button
                 variant="contained"
@@ -484,38 +572,140 @@ const TeachersUI: React.FC = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 2 }}>
                   <Button
                     variant="outlined"
-                    startIcon={isPlaying ? <Pause /> : <PlayArrow />}
-                    onClick={isPlaying ? pauseRecording : playRecording}
+                    startIcon={<PlayArrow />}
+                    onClick={playRecording}
+                    disabled={isPlaying}
                   >
-                    {isPlaying ? 'Pause' : 'Play'}
+                    Play
                   </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<Pause />}
+                    onClick={pauseRecording}
+                    disabled={!isPlaying}
+                  >
+                    Pause
+                  </Button>
+                </Box>
+                <audio ref={audioRef} controls style={{ width: '100%' }} />
+                
+                {/* AI Processing Buttons */}
+                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
+                  <Button
+                    variant="contained"
+                    startIcon={<AutoFixHigh />}
+                    onClick={transcribeAudio}
+                    disabled={isTranscribing}
+                    color="secondary"
+                  >
+                    {isTranscribing ? (
+                      <>
+                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                        Transcribing...
+                      </>
+                    ) : (
+                      'Transcribe Audio'
+                    )}
+                  </Button>
+                  
                   <Button
                     variant="contained"
                     startIcon={<Save />}
                     onClick={saveRecording}
-                    color="success"
                   >
                     Save Recording
                   </Button>
                 </Box>
-                <audio
-                  ref={audioRef}
-                  src={audioUrl}
-                  onEnded={() => setIsPlaying(false)}
-                  style={{ display: 'none' }}
-                />
               </Box>
             )}
           </CardContent>
         </Card>
       )}
-      
-      <Alert severity="info" sx={{ mb: 3 }}>
-        <Typography variant="body2">
-          <strong>Recording Tips:</strong> Speak clearly and at a moderate pace. 
-          Include specific examples of student progress and areas for improvement.
-        </Typography>
-      </Alert>
+
+      {/* Transcription Display */}
+      {transcription && (
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              AI Transcription
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              value={transcription}
+              onChange={(e) => setTranscription(e.target.value)}
+              variant="outlined"
+              sx={{ mb: 2 }}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+              <Button
+                variant="contained"
+                startIcon={<AutoFixHigh />}
+                onClick={generateReport}
+                disabled={isGeneratingReport}
+                color="success"
+              >
+                {isGeneratingReport ? (
+                  <>
+                    <CircularProgress size={20} sx={{ mr: 1 }} />
+                    Generating Report...
+                  </>
+                ) : (
+                  'Generate AI Report'
+                )}
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Generated Report Display */}
+      {generatedReport && (
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6">
+                AI Generated Report
+              </Typography>
+              <Chip 
+                label={reportStatus} 
+                color={reportStatus === 'completed' ? 'success' : reportStatus === 'review' ? 'warning' : 'default'}
+              />
+            </Box>
+            <TextField
+              fullWidth
+              multiline
+              rows={12}
+              value={generatedReport}
+              onChange={(e) => setGeneratedReport(e.target.value)}
+              variant="outlined"
+              sx={{ mb: 2 }}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+              <Button
+                variant="contained"
+                startIcon={<Send />}
+                onClick={sendReport}
+                disabled={reportStatus === 'completed'}
+                color="primary"
+              >
+                Send to Parent
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  setGeneratedReport('');
+                  setTranscription('');
+                  setReportStatus('draft');
+                }}
+              >
+                Start Over
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      )}
     </Box>
   );
 
